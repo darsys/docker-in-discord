@@ -1,22 +1,28 @@
-'use strict';
+'use strict'
+require('dotenv').config()
 
-require('dotenv').config();
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN
+const DISCORD_SERVERID = process.env.DISCORD_SERVERID
+const DISCORD_BOTNAME = process.env.DISCORD_BOTNAME
+const DiscordServer = require('./discordServer.js')
+const discordServer = new DiscordServer(DISCORD_TOKEN, DISCORD_SERVERID, DISCORD_BOTNAME)
 
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const DISCORD_SERVERID = process.env.DISCORD_SERVERID;
+const dockerConnectObject = {socketPath: '/var/run/docker-host.sock'}
+const DockerServer = require('./dockerServer.js')
+const dockerServer = new DockerServer(dockerConnectObject)
 
-const Discord = require('discord.js');
-const client = new Discord.Client();
-
-let dcserver;
-
-client.on('ready', () => {
-	dcserver = client.guilds.resolve(DISCORD_SERVERID);
-	console.log(`Logged in as ${client.user.tag}! to server ${dcserver.name}!`);
-  });
-  
-client.on('message', msg => {
-	dcserver.channels.create(msg.content);
+discordServer.on("ready", () => {
+	dockerServer.getContainers()
+	.then( (containers) => { 
+		containers.slice(3,6).forEach( (containerInfo) => {
+			let containerName = containerInfo.Names[0].substring(1)
+			console.log(`Container name: '${containerName}' id: '${containerInfo.Id}' image: '${containerInfo.Image}'`);
+			discordServer.createChannel(containerName)
+		})
+	})				
+	.catch(console.error)
 });
+// dockerServer.docker.info()
+// 	.then( (info) => console.log(info) )
+// 	.catch(console.error)
 
-client.login(DISCORD_TOKEN);
