@@ -1,8 +1,8 @@
 {
 	"name": "did_node",
-	"dockerComposefile": "../docker-compose.yaml",
+	"dockerComposeFile": "../docker-compose.yaml",
 	"service": "did_node",
-	"workspaceMount": "/workspace",
+	"workspaceFolder": "/workspace",
 	
 	// Set *default* container specific settings.json values on container create.
 	"settings": { 
