@@ -1,10 +1,9 @@
-# ioServer
+# Docker monitoring and managment in Discord!
 
 ## Built With
 
 * [discord.js](https://discord.js.org/#/) - discord.js is a powerful node.js module that allows you to interact with the Discord API very easily.
-* [express](https://expressjs.com/) - Fast, unopinionated, minimalist web framework for Node.js.
-
+* [dockerode](https://github.com/apocas/dockerode) - Docker + Node = Dockerode (Node.js module for Docker's Remote API)
 
 ## Contributing
 
