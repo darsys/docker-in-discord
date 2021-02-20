@@ -1,7 +1,7 @@
-import { DiscordAPIError } from "discord.js";
+let { EventEmitter } = require("events");
 
 import Discord from 'discord.js';
-let { EventEmitter } = require("events");
+import container from './container';
 
 class discordServer extends EventEmitter {
 
@@ -44,32 +44,39 @@ class discordServer extends EventEmitter {
         // check if the parent category exists
         // if it exists attempt to find subordinate channels and remove
         
-        this.server.channels.cache.filter((channel) => { return channel.type === 'text'}).forEach( (c) => {
+        this.server.channels.cache.filter((channel) => { return channel.type === 'text'}).forEach( async (c) => {
             console.log(c)
             if(c.isText()) {
                 if(c.topic === 'docker chat') {
-                    this.removeChannel(c, 'cleaning up at startup.. ')
+                    await c.delete('cleaning up at startup.. ')
                 }
             }
         })
         let oldCatChannel = this.findChannelbyName(this.botname)
-        if (oldCatChannel) this.removeChannel(oldCatChannel, 'cleaning up at startup.. ')
+        if (oldCatChannel) this.removeChannelAsync(oldCatChannel, 'cleaning up at startup.. ')
     }
 
-    createChannel(channelName: string) : Promise<Discord.TextChannel | Discord.CategoryChannel | Discord.VoiceChannel> {
+    async createContainerChannel(container: container) {
+        let newChannel = await this.createChannel(container.name)
+        if (newChannel !== undefined)
+            container.channel = newChannel
+    }
+
+   async createChannel(channelName: string) : Promise<Discord.GuildChannel> {
         let options : Discord.GuildCreateChannelOptions = {
             type: 'text',
             parent: this.catChannel.id,
             reason: this.botname,
             topic: 'docker chat'
         }
-        let oldChannel = this.findChannelbyName(channelName) 
-        if (oldChannel) {
+        let newChannel = this.findChannelbyName(channelName)
+        if (newChannel !== undefined) {
             console.log(`Channel ${channelName} already exists`);
-            this.removeChannel(oldChannel)
-        } 
-        console.debug(`${channelName} ${JSON.stringify(options)}`)
-        return this.server.channels.create(channelName, options)
+            return Promise.resolve(newChannel)
+        } else {
+            let newChannel = await this.server.channels.create(channelName, options)
+            return Promise.resolve(newChannel)
+        }
     }
 
     removeChannel( channel: Discord.GuildChannel, reason : string = 'No Good Reason!') {
@@ -77,6 +84,11 @@ class discordServer extends EventEmitter {
             .then( (chan) => { if(chan.isText()) console.debug(`${chan.id} removed for ${reason}`) } )
             .catch(console.error)
     }
+
+    async removeChannelAsync( channel: Discord.GuildChannel, reason : string = 'No Good Reason!') {
+        await channel.delete(reason)
+    }
+
 
 }
 

@@ -3,6 +3,22 @@ services:
   did_node:
     container_name: did_node
     image: mcr.microsoft.com/vscode/devcontainers/javascript-node:14
-    volumes:
-      - /var/run/docker.sock:/var/run/docker-host.sock 
-      - /share/Sync/projects/docker-in-discord:/workspace:cached
+    # restart: unless-stopped
+    # user: node
+    # entrypoint: /usr/local/share/docker-init.sh
+    command: sleep infinity
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker-host.sock
+    #   - /share/Sync/projects/docker-in-discord:/workspace:cached
+    # ports:
+    #   - "3000:3000"
+    # environment:
+    #   - PHP_TZ="America/Chicago"
+
+# volumes:
+#   etc:
+
+# networks:
+#   default:
+#     external:
+#       name: services_bridge

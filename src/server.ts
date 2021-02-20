@@ -1,23 +1,34 @@
 require('dotenv').config()
 
+import container from './container'
+import DockerServer from './dockerServer'
+import DiscordServer from './discordServer'
+
+const dockerConnectObject = {socketPath: '/var/run/docker-host.sock'}
+const dockerSvr = new DockerServer(dockerConnectObject)
+
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN || ''
 const DISCORD_SERVERID = process.env.DISCORD_SERVERID || ''
 const DISCORD_BOTNAME = process.env.DISCORD_BOTNAME || 'dockerNdiscord'
-import DiscordServer from './discordServer'
 const discordSvr = new DiscordServer(DISCORD_TOKEN, DISCORD_SERVERID, DISCORD_BOTNAME)
 
-const dockerConnectObject = {socketPath: '/var/run/docker-host.sock'}
-import DockerSvr from './dockerServer'
-const dockerSvr = new DockerSvr(dockerConnectObject)
-
 discordSvr.on("ready", () => {
-	dockerSvr.getContainers()
-	.then( (containers: any[]) => { 
-		containers.slice(3,6).forEach( (containerInfo: any): any => {
-			let containerName = containerInfo.Names[0].substring(1)
-			console.log(`Container name: '${containerName}' id: '${containerInfo.Id}' image: '${containerInfo.Image}'`);
-			discordSvr.createChannel(containerName)
-		})
-	})				
-	.catch(console.error)
+	console.log(`discord server ready`)
+	let cont = dockerSvr.getContainers()
+	cont.forEach( (container: container): any => {
+		console.log(`Channel creation for container name: '${container.name}' id: '${container.Id}' image: '${container.Image}'`);
+		discordSvr.createContainerChannel(container)
+	})
 });
+
+// function hookupEvents(channel) {
+// 	this.docker.getEvents({filters: {'container': ['cadvisor']}}, function (err, data) {
+// 		if(err){
+// 			console.log(err.message);
+// 		} else {
+// 			data.on('data', function (chunk) {
+// 				console.log(JSON.parse(chunk.toString('utf8')))
+// 			})
+// 		} 
+// 	})
+// }
